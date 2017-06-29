@@ -53,7 +53,7 @@
       return {
         scrollY: -1,
         currentIndex: 0,
-        diff: -1
+        diff: -1 //计算滚动的位置和上限的差
       }
     },
     props: {
@@ -71,8 +71,10 @@
       fixedTitle() {
         /*1首先要让上面有名字可以显示 固定顶部的名字，判断条件是 this.currentIndex*/
         if (this.scrollY > 0) {
+          // 因为在向下拉的时候上面要继续显示的话，不好看
           return ''
         }
+        // 为什么要判断呢，因为刚开始的时候是没有值的
         return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
       }
     },
@@ -100,6 +102,16 @@
       },
       _scrollTo(index) {
 
+        if (!index && index != 0) {
+          return
+        }
+        // 在touchmove的时候 如果继续向上滚的时候其实这个index是还在变化的
+        // 所以要对他判断 进行边界处理
+        if (index < 0) {
+          index = 0
+        } else if (index > this.listHeight.length - 2) {
+          index = this.listHeight.length - 2
+        }
         this.scrollY = -this.listHeight[index]
         this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
       },
@@ -125,7 +137,7 @@
       scrollY(newY) {
         const listHeight = this.listHeight
         // 当滚动到上面的时候
-        
+
         if (newY > 0) {
           this.currentIndex = 0
           return
@@ -146,13 +158,13 @@
       },
       diff(newVal) {
         let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
-        // 为什么判断这个值 ?
+        // 为什么判断这个值  ，在相等的时候不需要改变,也减少了dom操作的频度
         if (this.fixedTop === fixedTop) {
           return
         }
         this.fixedTop = fixedTop
         this.$refs.fixed.style.transform = `translate3d(0, ${fixedTop}px, 0)`
-      } 
+      }
     },
     components: {
       Scroll,
