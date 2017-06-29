@@ -8,7 +8,7 @@
 
   export default {
     props: {
-      probeType: {
+      probeType: { // 截流控制
         type: Number,
         default: 1
       },

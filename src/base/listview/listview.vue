@@ -23,15 +23,23 @@
           v-for="(item, index) in shortcutList"
           :class="{'current': currentIndex === index}"
           :data-index="index">
-          {{index}}
+          {{item}}
         </li>
       </ul>
+    </div>
+    <div class="list-fixed" ref="fixed" v-show="fixedTitle">
+      <div class="fixed-title">{{fixedTitle}}</div>
+    </div>
+    <div v-show="!data.length" class="loading-container">
+      <loading></loading>
     </div>
   </scroll>
 </template>
 <script>
   import Scroll from 'base/scroll/scroll'
   import {getData} from 'common/js/dom'
+  import Loading from 'base/loading/loading'
+  const TITLE_HEIGHT = 30
   const ANCHOR_HEIGHT = 18
 
   export default {
@@ -44,7 +52,8 @@
     data() {
       return {
         scrollY: -1,
-        currentIndex: 0
+        currentIndex: 0,
+        diff: -1
       }
     },
     props: {
@@ -58,15 +67,22 @@
         return this.data.map((item) => {
           return item.title.substr(0, 1)
         })
+      },
+      fixedTitle() {
+        /*1首先要让上面有名字可以显示 固定顶部的名字，判断条件是 this.currentIndex*/
+        if (this.scrollY > 0) {
+          return ''
+        }
+        return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
       }
     },
     methods: {
       onShortcutTouchStart(e) {
         let anchorIndex = getData(e.target, 'index') - 0
-        let firstTouch = e.touches[0] - 0
+        let firstTouch = e.touches[0]
         this.touch.y1 = firstTouch.pageY
         this.touch.anchorIndex = anchorIndex
-        console.log("onShortcutTouchStart", anchorIndex)
+
         this._scrollTo(anchorIndex)
       },
       onShortcutTouchMove(e) {
@@ -77,17 +93,14 @@
         this.touch.y2 = firstTouch.pageY
         let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0
         let anchorIndex = parseInt(this.touch.anchorIndex) + delta
-        console.log("anchorIndex", anchorIndex)
         this._scrollTo(anchorIndex)
       },
       scroll(pos) {
         this.scrollY = pos.y
       },
       _scrollTo(index) {
-        console.log("index", index)
 
         this.scrollY = -this.listHeight[index]
-
         this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
       },
       _calculateHeight() {
@@ -112,29 +125,38 @@
       scrollY(newY) {
         const listHeight = this.listHeight
         // 当滚动到上面的时候
-        console.log("之前", this.currentIndex)
+        
         if (newY > 0) {
           this.currentIndex = 0
           return
         }
         // 当滚动到中间部分的时候
-        //
-        for (var i = 0; i < listHeight.length -1; i++) {
+        for (let i = 0; i < listHeight.length -1; i++) {
           let height1 = listHeight[i]
           let height2 = listHeight[i + 1]
-          if (-newY >= height1 && -newY <= height2) {
+          if (-newY >= height1 && -newY < height2) {
             this.currentIndex = i
-            console.log("之中", this.currentIndex)
+            this.diff = height2 + newY // 为什么这样计算就能得到 ?
             return
           }
         }
 
         // 当滚动到下面的时候
         this.currentIndex = listHeight.length - 2
-      }
+      },
+      diff(newVal) {
+        let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
+        // 为什么判断这个值 ?
+        if (this.fixedTop === fixedTop) {
+          return
+        }
+        this.fixedTop = fixedTop
+        this.$refs.fixed.style.transform = `translate3d(0, ${fixedTop}px, 0)`
+      } 
     },
     components: {
-      Scroll
+      Scroll,
+      Loading
     }
   }
 </script>

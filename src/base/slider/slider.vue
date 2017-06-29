@@ -38,8 +38,8 @@
     mounted() {
       let _this = this
       setTimeout(() => {
-        _this._setSliderWidth()
-        _this._initDots() //初始化点
+        _this._setSliderWidth() // 初始化图片的宽度
+        _this._initDots()       // 初始化点
         _this._initSlider()
 
         if (_this.autoPlay) {
@@ -58,6 +58,9 @@
     },
     methods: {
       _setSliderWidth(isReset) {
+        /*
+          计算轮播图外面那个大盒子的宽度
+         */
         let _this = this;
         _this.children = _this.$refs.sliderGroup.children
 
@@ -70,6 +73,7 @@
 
           width += sliderWidth
         }
+        // 无缝滚动要在前后面加宽度
         if (_this.loop && !isReset) {
           width += 2*sliderWidth
         }
@@ -116,7 +120,7 @@
       }
     },
     destroyed() {
-      clearTimeout(this.time)
+      clearTimeout(this.timer)
     }
   }
 </script>
