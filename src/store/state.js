@@ -1,11 +1,11 @@
-import {playModel} from "common/js/config";
+import {playMode} from "common/js/config";
 const state = {
   singer: {},
   playing: false,
   fullScreen: false,
   playList: [],
   sequenceList: [],
-  Model: playModel.sequence,
+  Model: playMode.sequence,
   currentIndex: -1,
 }
 
