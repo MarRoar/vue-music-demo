@@ -39,7 +39,31 @@ apiRoutes.get('/getDiscList', (req, res) => {
   }).catch((error) => {
     console.log(error)
   })
+})
 
+// 获取歌词
+apiRoutes.get('/lyric', (req, res) => {
+  var url = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg'
+
+  axios.get(url, {
+    headers: {
+      referer: 'https://c.y.qq.com/',
+      host: 'c.y.qq.com'
+    },
+    params: req.query
+  }).then((response) => {
+    var ret = response.data
+    if (typeof ret) {
+      var reg = /^\w+\(({[^()]+})\)$/
+      var matchs = ret.match(reg)
+      if (matchs) {
+        ret = JSON.parse(matchs[1])
+      }
+    }
+    res.json(ret)
+  }).catch((error) => {
+    console.log(error)
+  })
 })
 
 app.use('/api', apiRoutes)
